@@ -2,7 +2,10 @@
 
 class CM_Test_Element extends CUSTOM_OXY_BASE_ELEMENT
 {
-    public function name(){
+    public $js_added = false;
+
+    public function name()
+    {
         return 'Test Element';
     }
 
@@ -52,7 +55,43 @@ class CM_Test_Element extends CUSTOM_OXY_BASE_ELEMENT
         /* 
          * access values previously defined in controls like this $options['control_slug']
          */
-        echo "<button>". $options['btn_text'] ."</button>";
+        echo "<button class='cm-btn'>". $options['btn_text'] ."</button>";
+    }
+
+    public function afterInit()
+    {
+        /* inlineJS: can only be called once to print js code inside script tag after every element */
+
+        /* Add raw js (after every element) */
+        $js_dynamic_element_id = '%%ELEMENT_ID%%';
+        $this->El->inlineJS("alert('$js_dynamic_element_id')");
+
+        /* Add js file only once (in footer) */
+        if ($this->js_added !== true) {
+            $this->output_js();
+            $this->js_added = true;
+        }
+    }
+    
+    /*
+     * Enqueue JS (Footer)
+     */
+    public function output_js()
+    {
+        add_action('wp_footer', function () {
+            $js = file_get_contents(__DIR__ . '/CM_Test_Element.js');
+
+            echo "<script type='text/javascript'>{$js}</script>";
+        });
+    }
+
+    /*
+     * Enqueue Styles (Head)
+     * @returns {string} css
+     */
+    public function defaultCSS()
+    {
+        return file_get_contents(__DIR__ . '/CM_Test_Element.css');
     }
 }
 
